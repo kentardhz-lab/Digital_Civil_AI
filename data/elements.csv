@@ -1,0 +1,5 @@
+Element,Length_m,Load_kN
+Beam,6.0,45
+Column,3.2,120
+Slab,5.5,80
+Beam2,,100
