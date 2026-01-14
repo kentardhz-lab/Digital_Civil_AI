@@ -11,11 +11,19 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 
 
 # Keep console output clean (R2 warning happens with extremely small test sets)
 warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
+
+
+def safe_r2_text(y_true, y_pred) -> str:
+    """Return R2 formatted text only if it is statistically defined."""
+    if len(y_true) >= 2:
+        return f"{r2_score(y_true, y_pred):.3f}"
+    return "skipped (need >= 2 test samples)"
 
 
 def main():
@@ -31,22 +39,22 @@ def main():
     # Drop rows with missing values in required columns (defensive)
     df = df.dropna(subset=required_cols).copy()
 
-    # 3) Features / Target
-    X = df[["Element", "Length_m"]]
-    y = df["Load_kN"]
-
     # Defensive check: need at least 3 rows to split into train/test
     if len(df) < 3:
         raise ValueError(
             f"Dataset too small for train/test split. Need >= 3 rows, got {len(df)}."
         )
 
+    # 3) Features / Target
+    X = df[["Element", "Length_m"]]
+    y = df["Load_kN"]
+
     # 4) Split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=42
     )
 
-    # 5) Preprocess + Model
+    # 5) Preprocessing (shared)
     preprocessor = ColumnTransformer(
         transformers=[
             ("cat", OneHotEncoder(handle_unknown="ignore"), ["Element"]),
@@ -54,44 +62,62 @@ def main():
         ]
     )
 
-    model = Pipeline(
+    # ----------------------------
+    # Model 1: Linear Regression
+    # ----------------------------
+    lin_model = Pipeline(
         steps=[
             ("prep", preprocessor),
             ("reg", LinearRegression()),
         ]
     )
 
-    # 6) Train
-    model.fit(X_train, y_train)
+    lin_model.fit(X_train, y_train)
+    y_pred_lin = lin_model.predict(X_test)
 
-    # 7) Predict
-    y_pred = model.predict(X_test)
+    mae_lin = mean_absolute_error(y_test, y_pred_lin)
+    rmse_lin = root_mean_squared_error(y_test, y_pred_lin)
+    r2_lin_text = safe_r2_text(y_test, y_pred_lin)
 
-    # 8) Metrics (always safe)
-    mae = mean_absolute_error(y_test, y_pred)
-    rmse = root_mean_squared_error(y_test, y_pred)
+    # ----------------------------
+    # Model 2: Decision Tree
+    # ----------------------------
+    tree_model = Pipeline(
+        steps=[
+            ("prep", preprocessor),
+            ("reg", DecisionTreeRegressor(random_state=42, max_depth=3)),
+        ]
+    )
 
-    # R2 is only meaningful with >= 2 test samples
-    r2_text = "skipped (need >= 2 test samples)"
-    if len(y_test) >= 2:
-        r2 = r2_score(y_test, y_pred)
-        r2_text = f"{r2:.3f}"
+    tree_model.fit(X_train, y_train)
+    y_pred_tree = tree_model.predict(X_test)
 
-    # 9) Report
-    print("=== Phase 2: ML Baseline (Linear Regression) ===")
+    mae_tree = mean_absolute_error(y_test, y_pred_tree)
+    rmse_tree = root_mean_squared_error(y_test, y_pred_tree)
+    r2_tree_text = safe_r2_text(y_test, y_pred_tree)
+
+    # 6) Report
+    print("=== Phase 2: ML Models (Regression) ===")
     print(f"Rows: {len(df)} | Train: {len(X_train)} | Test: {len(X_test)}")
-    print(f"MAE : {mae:.3f} kN")
-    print(f"RMSE: {rmse:.3f} kN")
-    print(f"R2  : {r2_text}")
 
-    # 10) Quick sanity table (worst errors first)
+    print("\n--- Linear Regression ---")
+    print(f"MAE : {mae_lin:.3f} kN")
+    print(f"RMSE: {rmse_lin:.3f} kN")
+    print(f"R2  : {r2_lin_text}")
+
+    print("\n--- Decision Tree (max_depth=3) ---")
+    print(f"MAE : {mae_tree:.3f} kN")
+    print(f"RMSE: {rmse_tree:.3f} kN")
+    print(f"R2  : {r2_tree_text}")
+
+    # 7) Sanity table (based on Linear predictions)
     out = X_test.copy()
     out["Load_kN_true"] = y_test.values
-    out["Load_kN_pred"] = y_pred
-    out["abs_error"] = (out["Load_kN_true"] - out["Load_kN_pred"]).abs()
+    out["Load_kN_pred_lin"] = y_pred_lin
+    out["abs_error_lin"] = (out["Load_kN_true"] - out["Load_kN_pred_lin"]).abs()
 
-    print("\nSample predictions (worst 10 errors):")
-    print(out.sort_values("abs_error", ascending=False).head(10))
+    print("\nSample predictions (Linear, worst errors first):")
+    print(out.sort_values("abs_error_lin", ascending=False).head(10))
 
 
 if __name__ == "__main__":
