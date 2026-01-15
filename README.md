@@ -20,7 +20,7 @@ using structural element data.
 
 ---
 
-## Phase 2 – Machine Learning Baseline (In Progress)
+## Phase 2 – Machine Learning Baseline (completed)
 
 Phase 2 extends the project towards predictive modeling and machine learning.
 
@@ -29,6 +29,11 @@ Phase 2 extends the project towards predictive modeling and machine learning.
 - Train / test splitting
 - Baseline regression models
 - Initial evaluation metrics
+
+Outputs include:
+- Baseline regression models (Linear Regression, Decision Tree)
+- Evaluation metrics (MAE, RMSE, R² where applicable)
+- Metrics exported to outputs/phase2_metrics.txt
 
 This phase is under active development and will be extended with more advanced models.
 
@@ -56,3 +61,18 @@ Digital_Civil_AI/
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # Project documentation
 └── .gitignore
+
+## How to Run
+
+Create a virtual environment and install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+Run Phase 1 
+python phase1-intero.py
+
+Run Phase 2
+python phase2-ml-baseline.py
