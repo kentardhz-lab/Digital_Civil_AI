@@ -4,7 +4,8 @@
 
 import warnings
 import pandas as pd
-
+import os
+import matplotlib.pyplot as plt
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
@@ -29,7 +30,10 @@ def safe_r2_text(y_true, y_pred) -> str:
 def main():
     # 1) Load data
     df = pd.read_csv("data/elements.csv")
-
+    
+    # Ensure outputs directory exists
+    os.makedirs("outputs", exist_ok=True)
+   
     # 2) Basic validation
     required_cols = ["Element", "Length_m", "Load_kN"]
     missing_cols = [c for c in required_cols if c not in df.columns]
@@ -51,7 +55,7 @@ def main():
 
     # 4) Split
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, random_state=42
+        X, y, test_size=0.5, random_state=42
     )
 
     # 5) Preprocessing (shared)
@@ -95,6 +99,24 @@ def main():
     mae_tree = mean_absolute_error(y_test, y_pred_tree)
     rmse_tree = root_mean_squared_error(y_test, y_pred_tree)
     r2_tree_text = safe_r2_text(y_test, y_pred_tree)
+    # --- Save metrics to file (Phase 2 output) ---
+    metrics_text = (
+        "Phase 2 - ML Baseline (Regression)\n"
+        f"Rows: {len(df)} | Train: {len(X_train)} | Test: {len(X_test)}\n\n"
+        "Linear Regression\n"
+        f"MAE:  {mae_lin:.3f} kN\n"
+        f"RMSE: {rmse_lin:.3f} kN\n"
+        f"R2:   {r2_lin_text}\n\n"
+        "Decision Tree (max_depth=3)\n"
+        f"MAE:  {mae_tree:.3f} kN\n"
+        f"RMSE: {rmse_tree:.3f} kN\n"
+        f"R2:   {r2_tree_text}\n"
+    )
+
+    with open("outputs/phase2_metrics.txt", "w", encoding="utf-8") as f:
+        f.write(metrics_text)
+
+    print("Saved metrics to outputs/phase2_metrics.txt")
 
     # 6) Report
     print("=== Phase 2: ML Models (Regression) ===")
