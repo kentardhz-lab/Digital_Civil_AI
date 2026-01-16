@@ -76,3 +76,28 @@ python phase1-intero.py
 
 Run Phase 2
 python phase2-ml-baseline.py
+
+## Roadmap
+
+- Phase 3: Feature expansion and model comparison
+- Phase 4: Model validation and cross-validation
+- Phase 5: Engineering-oriented interpretation of ML results
+- Phase 6: Automation and AI-assisted decision suppor
+
+## Notes
+
+This project is designed with an engineering-first mindset.
+Machine learning models are treated as supportive tools, not black-box replacements
+for structural reasoning and validation.
+
+## Phase 3 — Feature Engineering & Model Comparison
+
+What was done:
+- Engineered features: load_per_meter, inv_length
+- Sanity checks for engineered features (NaN / Inf)
+- Baseline vs engineered comparison using Linear Regression
+
+Notes:
+- Dataset is very small, so metrics (especially R²) are unstable.
+- A leakage-prone feature idea was identified and avoided (target leakage awareness).
+- Next step: try a non-linear model and/or cross-validation for small datasets.
