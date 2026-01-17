@@ -118,3 +118,17 @@ Notes:
 - Observed significant error reduction compared to linear models.
 - Results are unstable due to very small dataset size.
 - This step demonstrates model selection reasoning rather than final performance.
+
+## Phase 4 — Model Validation (Cross-Validation)
+
+What was done:
+- Implemented cross-validation using KFold.
+- Adjusted `n_splits` to match the extremely small dataset size (n=4).
+- Compared Linear Regression vs a constrained Decision Tree (`max_depth=3`) using R².
+
+Key takeaway:
+- With very small datasets, R² can be undefined or highly unstable; variance (std) is as important as the mean.
+- This phase focuses on validation discipline rather than performance claims.
+
+Outputs:
+- `outputs/phase4_cv_metrics.txt`

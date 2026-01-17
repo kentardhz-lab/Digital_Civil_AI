@@ -1,0 +1,16 @@
+Phase 4 — Cross-Validation (R2)
+CV strategy: KFold(n_splits=2, shuffle=True, random_state=42)
+Features: Length_m
+Target: Load_kN
+
+LinearRegression:
+- Mean R2: -264.431
+- Std  R2: 242.899
+
+DecisionTree:
+- Mean R2: -9.898
+- Std  R2: 0.898
+
+Notes:
+- Dataset is extremely small; R2 is unstable and can be strongly negative.
+- n_splits was chosen to keep at least 2 samples in each test fold.
