@@ -97,7 +97,24 @@ What was done:
 - Sanity checks for engineered features (NaN / Inf)
 - Baseline vs engineered comparison using Linear Regression
 
+### Outputs (Phase 3)
+- Engineered features added: load_per_meter, inv_length
+- Sanity checks: NaN/Inf validation for engineered columns
+- Comparison: baseline vs engineered features (Linear Regression)
+- Non-linear check: Decision Tree regressor (results unstable due to very small dataset)
+
+### Conclusion (Phase 3)
+- The dataset is very small; therefore metrics (especially R²) can fluctuate significantly.
+- Feature ideas were reviewed for target leakage risk; leakage-prone features were avoided.
+- This phase focused on engineering reasoning and model selection logic, not maximum performance.
+
 Notes:
 - Dataset is very small, so metrics (especially R²) are unstable.
 - A leakage-prone feature idea was identified and avoided (target leakage awareness).
 - Next step: try a non-linear model and/or cross-validation for small datasets.
+
+### Non-linear model test
+- Tested a simple Decision Tree regressor to capture non-linear behavior.
+- Observed significant error reduction compared to linear models.
+- Results are unstable due to very small dataset size.
+- This step demonstrates model selection reasoning rather than final performance.
