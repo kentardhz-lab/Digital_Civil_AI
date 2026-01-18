@@ -141,3 +141,26 @@ Documentation:
 Focus:
 - Engineering judgment over raw ML metrics
 - Interpretation of instability caused by very small datasets
+
+
+## Phase 6 — Robustness & Scenario-Based Decision Support
+
+In this phase, the project moves beyond raw ML metrics and focuses on
+engineering-grade decision support under uncertainty.
+
+### What was done
+- Robustness testing via controlled noise injection on input features
+- Feature sensitivity analysis (perturbation without performance metrics)
+- Scenario framing using percentile-based Best / Nominal / Worst cases
+- Engineering verdict layer translating ML outputs into decision ranges
+
+### Key insights
+- With extremely small datasets, performance metrics (e.g. R²) are unstable or undefined
+- Robustness and behavioral consistency are more important than single-point accuracy
+- Linear models provide smoother, more predictable trends
+- Tree-based models highlight threshold effects and worst-case risks
+
+### Engineering takeaway
+Model outputs should be interpreted as ranges, not exact predictions.
+The system is suitable for scenario comparison and risk-aware decision support,
+not for deterministic numerical forecasts.

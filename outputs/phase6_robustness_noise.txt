@@ -1,0 +1,25 @@
+PHASE 6.1 — ROBUSTNESS TEST (NOISE INJECTION)
+
+Dataset: data\elements.csv
+Rows (n): 4
+Target: Load_kN
+Numeric features (1): ['Length_m']
+CV: KFold(n_splits=4, shuffle=True, seed=42)
+Metric: R2 (note: can be unstable/NaN for tiny datasets)
+----------------------------------------------------------------------
+
+Noise level: 0%
+  LinearRegression: mean=nan, std=nan, raw=[nan, nan, nan, nan]
+  DecisionTree(max_depth=3): mean=nan, std=nan, raw=[nan, nan, nan, nan]
+
+Noise level: 5%
+  LinearRegression: mean=nan, std=nan, raw=[nan, nan, nan, nan]
+  DecisionTree(max_depth=3): mean=nan, std=nan, raw=[nan, nan, nan, nan]
+
+Noise level: 10%
+  LinearRegression: mean=nan, std=nan, raw=[nan, nan, nan, nan]
+  DecisionTree(max_depth=3): mean=nan, std=nan, raw=[nan, nan, nan, nan]
+
+Engineering note:
+  If small noise causes large swings in mean/std, the pipeline is not robust.
+  Robustness matters more than a single high score on tiny datasets.
