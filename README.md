@@ -177,3 +177,84 @@ What it does
 Run
 ```bash
 python src/phase7_decision_layer.py
+
+## Phase 8 — System Validation & Stress Testing
+
+Goal: Validate the engineering decision system under uncertainty, degradation, and extreme conditions.
+
+After establishing an engineering-grade decision layer in Phase 7, this phase focuses on validating the stability, consistency, and conservativeness of the system when inputs deviate from ideal conditions.
+
+Instead of relying on classical ML performance metrics, the validation is performed from an engineering risk perspective.
+
+### What was done
+- Controlled degradation of input parameters (loads and geometrical properties)
+- Simulation of extreme, worst-case engineering scenarios
+- Comparison of engineering verdicts across multiple stress levels
+
+### Validation scenarios
+- Base: Original dataset without modification  
+- Degraded: Increased loads and reduced effective lengths to simulate uncertainty  
+- Extreme: Aggressive amplification of loads and geometry degradation  
+
+### Output
+The system generates a validation report:
+
+Each column represents one scenario (Base / Degraded / Extreme) and contains the corresponding engineering verdict:
+- Safe
+- Borderline
+- Risky
+
+### Engineering insight
+A reliable engineering decision system must escalate risk transparently as conditions worsen.
+This phase confirms that the verdict logic behaves predictably, conservatively, and without abrupt or erratic transitions.
+
+Run
+```bash
+python src/src/phase8_system_validation.py
+
+## Phase 9 — Modular Automated Pipeline (Final Integration)
+
+Goal: Transform the project from a collection of isolated scripts into a fully integrated, modular, and automated engineering decision system executable with a single command.
+
+After validating the engineering decision logic under stress in Phase 8, this phase focuses on software architecture, modularization, and operational usability.
+
+The system is restructured to reflect real-world engineering software design principles, with clear separation of responsibilities and a centralized execution pipeline.
+
+### What was done
+- Refactored the project into logical modules (`core`, `pipeline`)
+- Isolated responsibilities for data loading, decision logic, and validation
+- Implemented a single orchestration script to run the full system end-to-end
+- Ensured reproducibility and clean execution without manual intervention
+
+### Final architecture
+
+src/
+├─ core/
+│  ├─ data_loader.py        # Data loading and preprocessing
+│  ├─ decision_engine.py    # Engineering verdict logic
+│  ├─ validation_engine.py  # Degraded and extreme scenario generation
+│
+├─ pipeline/
+│  ├─ run_full_pipeline.py  # Full system orchestration
+
+### Pipeline behavior
+The automated pipeline performs the following steps:
+1. Load the structural dataset
+2. Generate engineering verdicts for:
+   - Base scenario
+   - Degraded scenario
+   - Extreme scenario
+3. Aggregate all results into a single engineering report
+
+### Output
+The pipeline generates a final, unified report:
+
+Each column represents one scenario (Base / Degraded / Extreme), and each row contains the corresponding engineering verdict:
+- Safe
+- Borderline
+- Risky
+
+### Run the full system
+
+```bash
+python -m src.pipeline.run_full_pipeline
