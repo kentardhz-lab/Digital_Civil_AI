@@ -1,3 +1,7 @@
+[![CI](https://github.com/kentardhz-lab/Digital_Civil_AI/actions/workflows/ci.yml/badge.svg)](https://github.com/kentardhz-lab/Digital_Civil_AI/actions)
+
+
+
 # Digital Civil AI  
 ### Automated Engineering Decision Support System
 
