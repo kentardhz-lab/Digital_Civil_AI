@@ -164,3 +164,16 @@ engineering-grade decision support under uncertainty.
 Model outputs should be interpreted as ranges, not exact predictions.
 The system is suitable for scenario comparison and risk-aware decision support,
 not for deterministic numerical forecasts.
+
+## Phase 7 — Decision Layer (Engineering Verdict)
+
+Goal: Translate scenario-based ML outputs into an engineering-grade decision verdict.
+
+What it does
+- Builds percentile-based ranges (Best/Nominal/Worst) from the target variable
+- Computes a simple, model-free sensitivity proxy (mean absolute correlation)
+- Produces an Engineering Verdict: Safe / Borderline / Risky, plus confidence and recommended action
+
+Run
+```bash
+python src/phase7_decision_layer.py

@@ -1,0 +1,2 @@
+timestamp,input_csv,n_rows,target,features_used,best_p10,nominal_p50,worst_p90,worst_over_nominal_frac,sensitivity_score_mean_abs_corr,verdict,confidence,recommended_action
+2026-01-19T17:53:09,data_generated\elements_combined.csv,164,Load_kN,Length_m,64.95,86.0,119.17,0.3856976744186047,0.3973615062728359,Risky,Low,Do not rely on point estimates; require redesign / mitigation; prioritize worst-case planning.

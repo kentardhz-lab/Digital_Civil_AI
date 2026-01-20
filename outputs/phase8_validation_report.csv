@@ -1,0 +1,5 @@
+Base,Degraded,Extreme
+Safe,Safe,Safe
+Borderline,Risky,Risky
+Safe,Safe,Borderline
+Risky,Risky,Risky

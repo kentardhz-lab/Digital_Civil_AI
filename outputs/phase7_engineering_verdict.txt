@@ -1,0 +1,23 @@
+Phase 7 — Engineering Decision Verdict
+=====================================
+Timestamp: 2026-01-19T17:53:09
+Input: data_generated\elements_combined.csv
+
+Data size: n=164
+Target: Load_kN
+Features: Length_m
+
+Scenario ranges (percentiles):
+  Best (P10):    64.95
+  Nominal (P50): 86
+  Worst (P90):   119.17
+
+Worst-over-nominal (fraction): 0.385698
+Sensitivity score (mean abs corr): 0.397362
+
+Verdict: Risky
+Confidence: Low
+Recommended action: Do not rely on point estimates; require redesign / mitigation; prioritize worst-case planning.
+
+Per-feature sensitivity (abs corr):
+  - Length_m: 0.397362
