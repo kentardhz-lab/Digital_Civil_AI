@@ -1,3 +1,81 @@
+# Digital Civil AI  
+### Automated Engineering Decision Support System
+
+---
+
+## What is this project?
+
+Digital Civil AI is an automated engineering decision-support system designed for civil engineering projects operating under uncertainty.
+
+The goal of this system is not to produce exact numerical predictions, but to support safe, conservative, and explainable engineering decisions in real-world project conditions.
+
+---
+
+## What does the system do?
+
+The system processes structural and project-related data and:
+
+- Simulates multiple engineering scenarios  
+- Evaluates the impact of uncertainty and extreme conditions  
+- Translates analytical results into clear engineering decisions
+
+### Final system output:
+For each scenario, the system produces an Engineering Verdict:
+
+- Safe – Conditions are acceptable  
+- Borderline – Increased caution and review required  
+- Risky – High risk, corrective action recommended  
+
+---
+
+## Why is this different?
+
+Unlike many AI or machine-learning projects:
+
+- The focus is on decision stability, not raw prediction accuracy  
+- Results are interpretable and defensible from an engineering perspective  
+- The system is designed for real civil engineering constraints, not idealized datasets  
+
+---
+
+## Practical use cases
+
+This system can support:
+
+- Risk assessment in civil engineering projects  
+- Scenario comparison during design and planning  
+- Decision support for project managers  
+- Worst-case and stress-condition analysis  
+- Engineering feasibility studies and reporting  
+
+---
+
+## Project status
+
+This version represents a complete, modular, and automated system that:
+
+- Executes the full analysis pipeline end-to-end  
+- Produces a unified engineering report  
+- Is architected for future extensions (e.g. BIM integration, risk management, scheduling, cost analysis)
+
+---
+
+## Code access
+
+This repository is published to demonstrate the system architecture, workflow, and engineering outputs.
+
+Core decision logic and advanced internal mechanisms are intentionally abstracted and are shared only within professional or collaborative contexts.
+
+---
+
+## Important note
+
+This project is an engineering software system,  
+not a programming exercise or a standalone machine-learning model.
+
+Its purpose is to support better engineering decisions in real civil engineering projects.
+
+
 # Digital Civil AI
 
 This repository demonstrates a Python-based data analysis and machine learning pipeline
