@@ -214,17 +214,25 @@ python src/src/phase8_system_validation.py
 
 ## Phase 9 — Modular Automated Pipeline (Final Integration)
 
-Goal: Transform the project from a collection of isolated scripts into a fully integrated, modular, and automated engineering decision system executable with a single command.
+### Goal
+Transform the project from a collection of isolated phase scripts into a fully integrated, modular, and automated engineering decision system executable with a single command.
 
-After validating the engineering decision logic under stress in Phase 8, this phase focuses on software architecture, modularization, and operational usability.
+After validating the engineering decision logic under stress in Phase 8, this phase focuses on system architecture, modularization, and operational usability.
 
-The system is restructured to reflect real-world engineering software design principles, with clear separation of responsibilities and a centralized execution pipeline.
+The objective is to reflect real-world engineering software design principles, including clear separation of responsibilities and centralized orchestration.
+
+---
 
 ### What was done
-- Refactored the project into logical modules (`core`, `pipeline`)
-- Isolated responsibilities for data loading, decision logic, and validation
+- Refactored the project into logical, reusable modules
+- Separated responsibilities for:
+  - Data loading and preprocessing
+  - Engineering decision logic
+  - Scenario degradation and validation
 - Implemented a single orchestration script to run the full system end-to-end
 - Ensured reproducibility and clean execution without manual intervention
+
+---
 
 ### Final architecture
 
@@ -244,7 +252,9 @@ The automated pipeline performs the following steps:
    - Base scenario
    - Degraded scenario
    - Extreme scenario
-3. Aggregate all results into a single engineering report
+3. Aggregate all results into a single unified engineering report
+
+---
 
 ### Output
 The pipeline generates a final, unified report:
@@ -254,7 +264,15 @@ Each column represents one scenario (Base / Degraded / Extreme), and each row co
 - Borderline
 - Risky
 
-### Run the full system
+---
 
+### Engineering insight
+This phase completes the transition from experimental analysis to an operational engineering system.
+
+The project now behaves as a decision-support tool rather than a collection of analytical experiments, enabling repeatable, transparent, and conservative engineering assessments.
+
+---
+
+### Run the full system
 ```bash
 python -m src.pipeline.run_full_pipeline
