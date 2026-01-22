@@ -1,0 +1,17 @@
+project:
+  name: "demo_project"
+  units: "metric"
+
+inputs:
+  elements_csv: "data/elements.csv"
+
+run:
+  output_dir: "outputs"
+  run_id: null   # اگر null باشد خودکار ساخته می‌شود (timestamp)
+  scenarios: ["base", "degraded", "extreme"]
+
+qc:
+  enabled: false
+
+reporting:
+  enabled: false
