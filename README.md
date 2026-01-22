@@ -358,3 +358,73 @@ The project now behaves as a decision-support tool rather than a collection of a
 ### Run the full system
 ```bash
 python -m src.pipeline.run_full_pipeline
+
+System scope and boundaries
+
+The current implementation intentionally focuses on engineering decision logic and orchestration, not on UI, dashboards, or heavy machine learning.
+This constraint is deliberate: the primary objective is to establish a trustworthy, auditable decision backbone that mirrors how real engineering assessments are performed.
+
+At this stage, the system operates on structured tabular inputs (CSV / Excel-like data).
+Future extensions will connect this decision core to BIM/IFC models, enterprise data sources, and site feedback loops without changing the fundamental architecture.
+
+The system assumes:
+ • Deterministic and explainable decision rules
+ • Conservative engineering assumptions
+ • Explicit scenario separation rather than probabilistic black-box inference
+
+This makes the output suitable for engineering review, internal validation, and regulatory-oriented workflows.
+
+⸻
+
+Configuration-driven execution
+
+All executions are controlled through external configuration files located in the configs/ directory.
+This allows engineers to run different projects, datasets, and scenarios without modifying source code.
+
+Each pipeline run produces:
+ • A dedicated output directory
+ • A copy of the configuration used
+ • A unified engineering report
+ • Machine-readable metadata for traceability
+
+This design ensures that every result can be reproduced, audited, and compared against previous runs.
+
+⸻
+
+Schema and data contracts
+
+Input and output structures are formally defined using JSON schemas located in the schemas/ directory.
+
+These schemas serve as:
+ • Explicit data contracts between pipeline stages
+ • Validation layers for external integrations
+ • Documentation for future connectors (BIM, Excel, APIs)
+
+By enforcing schemas, the system avoids silent failures, ambiguous inputs, and undocumented assumptions.
+
+⸻
+
+Roadmap alignment
+
+This repository corresponds to the decision core and orchestration layers of the broader Digital Civil AI – Engineering Decision Infrastructure roadmap.
+
+Upcoming phases will build on this foundation by adding:
+ • BIM/IFC input connectors
+ • Cost, schedule, and risk automation modules
+ • Quality control and change management packs
+ • Formal PDF/Excel reporting
+ • CI-driven execution and packaging
+
+The architecture is intentionally prepared for these extensions without requiring refactoring of the existing decision logic.
+
+⸻
+
+Intended audience
+
+This project is designed for:
+ • Civil and structural engineers
+ • Technical project engineers
+ • Engineering managers interested in automation and traceability
+ • Organizations seeking explainable, rule-based decision support systems
+
+It is not intended as a data science experiment, but as a production-oriented engineering system.

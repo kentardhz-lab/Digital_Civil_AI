@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Run Manifest Schema",
+  "description": "Schema capturing execution metadata for a single pipeline run to ensure traceability and reproducibility.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "timestamp",
+    "config_file",
+    "input_source",
+    "output_directory"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for the pipeline execution."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Execution timestamp in ISO 8601 format."
+    },
+    "config_file": {
+      "type": "string",
+      "description": "Path to the configuration file used for this run."
+    },
+    "input_source": {
+      "type": "string",
+      "description": "Source of input data (CSV, Excel, IFC, etc.)."
+    },
+    "output_directory": {
+      "type": "string",
+      "description": "Directory where all artifacts of this run are stored."
+    }
+  },
+  "additionalProperties": false
+}
