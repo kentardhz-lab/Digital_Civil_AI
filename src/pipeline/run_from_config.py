@@ -1,155 +1,138 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
-import platform
-import subprocess
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from hashlib import sha256
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-import yaml  # pyyaml
+import yaml
+
+from src.pipeline.run_full_pipeline import run_full_pipeline
 
 
-# =========================
-# Utilities
-# =========================
-
-def utc_run_id() -> str:
+def _utc_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
 
-def file_sha256(path: Path) -> str:
-    h = sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
+def _load_yaml(p: Path) -> Dict[str, Any]:
+    with p.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
 
 
-def git_commit_hash() -> Optional[str]:
+def _write_text(p: Path, content: str) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(content, encoding="utf-8")
+
+
+def _write_json(p: Path, obj: Any) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _pip_freeze() -> str:
+    # بدون subprocess برای ساده نگه‌داشتن؛ در صورت نیاز فردا بهترش می‌کنیم
+    # اینجا fallback: اگر pip freeze ممکن نبود، فایل خالی نشه.
     try:
-        out = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
-            stderr=subprocess.DEVNULL,
-        )
-        return out.decode().strip()
-    except Exception:
-        return None
+        import subprocess
+        r = subprocess.run(["python", "-m", "pip", "freeze"], capture_output=True, text=True, check=True)
+        return r.stdout.strip()
+    except Exception as e:
+        return f"# pip freeze failed: {e}"
 
 
-def pip_freeze() -> Optional[str]:
-    try:
-        out = subprocess.check_output(
-            ["python", "-m", "pip", "freeze"],
-            stderr=subprocess.DEVNULL,
-        )
-        return out.decode()
-    except Exception:
-        return None
+@dataclass(frozen=True)
+class RunPaths:
+    root: Path
+    project_dir: Path
+    run_dir: Path
 
 
-def ensure_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
+def resolve_run_paths(cfg: Dict[str, Any]) -> RunPaths:
+    project_name = (cfg.get("project") or {}).get("name", "demo_project")
+
+    output_root = (cfg.get("output") or {}).get("root_dir", "outputs")
+    root = Path(output_root)
+
+    run_id = (cfg.get("run") or {}).get("id") or _utc_stamp()
+
+    project_dir = root / project_name
+    run_dir = project_dir / run_id
+
+    return RunPaths(root=root, project_dir=project_dir, run_dir=run_dir)
 
 
-def load_yaml(path: Path) -> Dict[str, Any]:
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def write_json(path: Path, data: Dict[str, Any]) -> None:
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-# =========================
-# Main runner
-# =========================
-
-def run(config_path: str) -> Path:
-    config_file = Path(config_path)
-    cfg = load_yaml(config_file)
-
-    project_name = cfg["project"]["name"]
-    output_root = Path(cfg["run"]["output_dir"])
-    run_id = cfg["run"].get("run_id") or utc_run_id()
-
-    run_dir = output_root / project_name / run_id
-    ensure_dir(run_dir)
-
-    # ---- inputs
-    elements_csv = Path(cfg["inputs"]["elements_csv"])
-    if not elements_csv.exists():
-        raise FileNotFoundError(f"Input file not found: {elements_csv}")
-
-    # ---- copy config for traceability
-    config_copy = run_dir / "config_used.yaml"
-    config_copy.write_text(config_file.read_text(encoding="utf-8"), encoding="utf-8")
-
-    # ---- manifest
-    manifest: Dict[str, Any] = {
-        "run_id": run_id,
-        "project": {
-            "name": project_name,
-            "units": cfg["project"].get("units", "metric"),
-        },
-        "paths": {
-            "config_file": str(config_file.as_posix()),
-            "config_used": str(config_copy.as_posix()),
-            "run_dir": str(run_dir.as_posix()),
-            "elements_csv": str(elements_csv.as_posix()),
-        },
-        "checksums": {
-            "config_sha256": file_sha256(config_file),
-            "elements_csv_sha256": file_sha256(elements_csv),
-        },
-        "env": {
-            "python_version": platform.python_version(),
-            "platform": platform.platform(),
-            "git_commit": git_commit_hash(),
-        },
-        "timestamp_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "scenarios": cfg["run"].get("scenarios", ["base", "degraded", "extreme"]),
+def build_run_manifest(*, cfg: Dict[str, Any], config_path: Path, run_dir: Path, outputs: list[str]) -> Dict[str, Any]:
+    return {
+        "run_id": run_dir.name,
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "config_name": config_path.name,
+        "config_path": str(config_path.as_posix()),
+        "input_source": "CSV",
+        "output_directory": str(run_dir.as_posix()),
+        "outputs": outputs,
     }
 
-    freeze = pip_freeze()
-    if freeze:
-        freeze_path = run_dir / "pip_freeze.txt"
-        freeze_path.write_text(freeze, encoding="utf-8")
-        manifest["env"]["pip_freeze_path"] = str(freeze_path.as_posix())
 
-    write_json(run_dir / "run_manifest.json", manifest)
-
-    # ---- run full pipeline
-    env = os.environ.copy()
-    env["CIVIL_AI_RUN_DIR"] = str(run_dir.resolve())
-
-    subprocess.check_call(
-    ["python", "-m", "src.pipeline.run_full_pipeline"],
-    env=env,
-    )
-
-    return run_dir
-
-
-# =========================
-# CLI
-# =========================
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Run Digital Civil AI from YAML config")
-    parser.add_argument(
-        "--config",
-        required=True,
-        help="Path to YAML config (e.g. configs/demo_project.yaml)",
-    )
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config", type=str, help="Path to YAML config, e.g. configs/demo_project.yaml")
     args = parser.parse_args()
 
-    out_dir = run(args.config)
-    print(f"[OK] Run completed. Outputs at: {out_dir}")
+    config_path = Path(args.config)
+    if not config_path.exists():
+        raise FileNotFoundError(f"Config not found: {config_path}")
+
+    cfg = _load_yaml(config_path)
+
+    paths = resolve_run_paths(cfg)
+    paths.run_dir.mkdir(parents=True, exist_ok=True)
+
+    elements_csv = Path((cfg.get("inputs") or {}).get("elements_csv", "data/elements.csv"))
+    scenarios_cfg = cfg.get("scenarios") or {}
+    scenarios = {
+        "base": bool(scenarios_cfg.get("base", True)),
+        "degraded": bool(scenarios_cfg.get("degraded", True)),
+        "extreme": bool(scenarios_cfg.get("extreme", True)),
+    }
+
+    # 1) copy config_used.yaml (for traceability)
+    if bool((cfg.get("output") or {}).get("keep_config_copy", True)):
+        cfg_used_path = paths.run_dir / "config_used.yaml"
+        _write_text(cfg_used_path, yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True))
+
+    # 2) run pipeline
+    run_full_pipeline(
+        elements_csv=elements_csv,
+        run_dir=paths.run_dir,
+        scenarios=scenarios,
+    )
+
+    # 3) pip freeze
+    if bool((cfg.get("output") or {}).get("write_pip_freeze", True)):
+        _write_text(paths.run_dir / "pip_freeze.txt", _pip_freeze())
+
+    # 4) run_manifest.json
+    outputs = [
+        "final_engineering_report.csv",
+        "qc_report.json",
+        "pip_freeze.txt",
+        "config_used.yaml",
+        "run_manifest.json",
+    ]
+    manifest = build_run_manifest(
+        cfg=cfg,
+        config_path=config_path,
+        run_dir=paths.run_dir,
+        outputs=outputs,
+    )
+    _write_json(paths.run_dir / "run_manifest.json", manifest)
+
+    print(f"[OK] Run completed. Outputs at: {paths.run_dir}")
+    return 0
 
 
+if __name__ == "__main__":
+    raise SystemExit(main())

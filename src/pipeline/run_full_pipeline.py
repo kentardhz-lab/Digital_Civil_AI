@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
+from typing import Dict
 
 import pandas as pd
 
@@ -11,46 +11,49 @@ from src.core.decision_engine import engineering_verdict
 from src.core.validation_engine import degrade_input, extreme_input
 
 
-# ----------------------------
-# OUTPUT DIRECTORY RESOLUTION
-# ----------------------------
-RUN_DIR = os.environ.get("CIVIL_AI_RUN_DIR")
-if RUN_DIR:
-    OUTPUT_DIR = Path(RUN_DIR)
-else:
-    OUTPUT_DIR = Path("outputs")
+def run_full_pipeline(
+    *,
+    elements_csv: Path,
+    run_dir: Path,
+    scenarios: Dict[str, bool] | None = None,
+) -> Path:
+    """
+    Full system orchestration (end-to-end).
+    Inputs:
+      - elements_csv: path to validated input CSV
+      - run_dir: directory where ALL artifacts for this run will be written
+      - scenarios: which scenarios to compute (base/degraded/extreme)
+    Returns:
+      - run_dir
+    """
+    scenarios = scenarios or {"base": True, "degraded": True, "extreme": True}
 
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    run_dir.mkdir(parents=True, exist_ok=True)
 
-
-def run() -> Path:
     # 1) Load data
-    df = load_elements()
+    df = load_elements(str(elements_csv))
 
-    # 2) QC (writes qc_report.json into OUTPUT_DIR)
+    # 2) QC (write report inside run_dir)
     run_basic_qc(
-        elements_csv=Path("data/elements.csv"),
-        out_dir=OUTPUT_DIR,
+        elements_csv=Path(elements_csv),
+        out_dir=run_dir,
     )
 
-    # 3) Engineering verdicts
-    report = pd.DataFrame(
-        {
-            "Base": engineering_verdict(df),
-            "Degraded": engineering_verdict(degrade_input(df)),
-            "Extreme": engineering_verdict(extreme_input(df)),
-        }
-    )
+    # 3) Compute verdicts per scenario
+    cols = {}
+    if scenarios.get("base", True):
+        cols["Base"] = engineering_verdict(df)
 
-    # 4) Export unified report into OUTPUT_DIR
-    out_file = OUTPUT_DIR / "final_engineering_report.csv"
+    if scenarios.get("degraded", True):
+        cols["Degraded"] = engineering_verdict(degrade_input(df))
+
+    if scenarios.get("extreme", True):
+        cols["Extreme"] = engineering_verdict(extreme_input(df))
+
+    report = pd.DataFrame(cols)
+
+    # 4) Write unified final report
+    out_file = run_dir / "final_engineering_report.csv"
     report.to_csv(out_file, index=False)
 
-    return OUTPUT_DIR
-
-
-if __name__ == "__main__":
-    out_dir = run()
-    print(f"[OK] Report written to: {out_dir / 'final_engineering_report.csv'}")
-    print(f"[OK] Outputs at: {out_dir}")
-
+    return run_dir

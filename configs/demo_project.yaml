@@ -1,17 +1,20 @@
 project:
-  name: "demo_project"
-  units: "metric"
-
-inputs:
-  elements_csv: "data/elements.csv"
+  name: demo_project
 
 run:
-  output_dir: "outputs"
-  run_id: null   # اگر null باشد خودکار ساخته می‌شود (timestamp)
-  scenarios: ["base", "degraded", "extreme"]
+  # optional; اگر خالی باشد خودکار timestamp می‌سازد
+  id: ""
 
-qc:
-  enabled: false
+inputs:
+  # فعلاً CSV؛ بعداً Excel/IFC اضافه می‌کنیم
+  elements_csv: data/elements.csv
 
-reporting:
-  enabled: false
+scenarios:
+  base: true
+  degraded: true
+  extreme: true
+
+output:
+  root_dir: outputs
+  keep_config_copy: true
+  write_pip_freeze: true
