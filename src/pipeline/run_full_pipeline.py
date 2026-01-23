@@ -4,6 +4,9 @@ from pathlib import Path
 from typing import Dict
 
 import pandas as pd
+import uuid
+from src.logging.logger import setup_logger
+from src.core.manifest import build_run_manifest, write_manifest
 
 from src.qc.basic_qc import run_basic_qc
 from src.core.data_loader import load_elements
@@ -30,6 +33,11 @@ def run_full_pipeline(
 
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    logger = setup_logger(run_dir)
+    run_id = uuid.uuid4().hex
+    logger.info("Run started. run_id=%s", run_id)
+
+
     # 1) Load data
     df = load_elements(str(elements_csv))
 
@@ -55,5 +63,25 @@ def run_full_pipeline(
     # 4) Write unified final report
     out_file = run_dir / "final_engineering_report.csv"
     report.to_csv(out_file, index=False)
+
+    output_files = [
+        run_dir / "final_engineering_report.csv",
+        run_dir / "qc_report.json",
+        run_dir / "pip_freeze.txt",
+        run_dir / "config_used.yaml",
+    ]
+    manifest = build_run_manifest(
+        run_id=run_id,
+        config_name="demo_project.yaml",
+        input_source="CSV / Excel / IFC / BIM",
+        run_dir=run_dir,
+        outputs=output_files,
+   )
+    manifest_path = write_manifest(run_dir, manifest)
+    logger.info("Manifest written: %s", str(manifest_path))
+    logger.info("Run finished successfully.")
+
+
+
 
     return run_dir
