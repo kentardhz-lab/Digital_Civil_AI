@@ -36,16 +36,24 @@ def run_full_pipeline(
     logger = setup_logger(run_dir)
     run_id = uuid.uuid4().hex
     logger.info("Run started. run_id=%s", run_id)
-
-
-    # 1) Load data
     df = load_elements(str(elements_csv))
 
+
     # 2) QC (write report inside run_dir)
-    run_basic_qc(
+    qc_report = run_basic_qc(
         elements_csv=Path(elements_csv),
         out_dir=run_dir,
     )
+
+    # --- QC GATE ---
+    qc_status = qc_report.get("status", "PASS")
+
+    if qc_status != "PASS":
+        raise RuntimeError(
+            f"QC gate failed with status={qc_status}. "
+            f"See qc_report.json for details."
+        )
+
 
     # 3) Compute verdicts per scenario
     cols = {}

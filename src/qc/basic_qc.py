@@ -1,25 +1,29 @@
+# src/qc/basic_qc.py
+from __future__ import annotations
+
 from pathlib import Path
 import pandas as pd
 
-REQUIRED_COLUMNS = ["Element_ID", "Length_m", "Load_kN"]
+from src.qc.runner import run_qc_packs
 
-def run_basic_qc(elements_csv: Path, out_dir: Path) -> None:
+
+def run_basic_qc(elements_csv: Path, out_dir: Path) -> dict:
+    """
+    Wrapper QC entrypoint used by the pipeline.
+    Reads elements CSV, runs enabled QC packs via runner, writes qc_report.json into out_dir,
+    and returns the qc_report as a dict.
+    """
     df = pd.read_csv(elements_csv)
 
-    report = {
-        "missing_columns": [],
-        "missing_values": {},
-        "row_count": int(len(df)),
-    }
+    # IMPORTANT: این لیست باید دقیقاً با ستون‌های elements.csv تو یکی باشد
+    required = ["Element", "Length_m", "Load_kN"]
 
-    for col in REQUIRED_COLUMNS:
-        if col not in df.columns:
-            report["missing_columns"].append(col)
-        else:
-            missing = int(df[col].isna().sum())
-            if missing > 0:
-                report["missing_values"][col] = missing
+    report = run_qc_packs(
+        df=df,
+        out_dir=out_dir,
+        required_columns=required,
+        max_missing_ratio=0.0,
+        enabled={"missing_values": True},
+    )
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    qc_path = out_dir / "qc_report.json"
-    qc_path.write_text(__import__("json").dumps(report, indent=2), encoding="utf-8")
+    return report
